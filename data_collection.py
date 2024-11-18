@@ -1,3 +1,8 @@
+# Assumptions: all text files from Project Guntenberg begin with an introductory statement (Followed by * * *, after which the text of the book begins) and 
+# are concluded with an ending statement (which is preceded by * * *, similarly). I remove these Project Gutenberg statements during cleaning. 
+# However, I do not remove some details which would be found in a book such as table of contents; I assume this to be part of the text.
+# I also assume that Project Gutenberg text files begin with a title, author, and language section. I use this to construct the metadata in my JSON.
+
 import re
 from collections import Counter
 import matplotlib.pyplot as plt
@@ -20,43 +25,6 @@ def save_to_file(text, file_path):
         file.write(text)
     print(f"File saved to {file_path}")
 
-
-def clean_text(text):
-    # Remove the introductory Project Gutenberg text (before the actual book starts)
-    text = re.sub(r"^.*?( \*\*\*)", "", text, flags=re.DOTALL)
-    # Remove the end Project Gutenberg text (after the book ends)
-    text = re.sub(r"(END OF THE PROJECT GUTENBERG EBOOK.*)", "", text, flags=re.DOTALL)
-
-    # Remove digits
-    text = re.sub(r"\d+", "", text)
-     # Remove apostrophes
-    text = text.replace("'", "")
-    text = text.replace("’", "") # Accounts for funky ’, which differs from regular apostrophe '
-    # Replace punctuation with space 
-    text = re.sub(r"[^\w\s]", " ", text)  # This replaces all punctuation except letters and whitespace 
-    # Replace dashes (hyphen, en dash, em dash) with spaces to preserve word separation
-    text = re.sub(r"[\u2014\u2013-]", " ", text)  # This replaces em dash, en dash, and hyphen
-    # Replace multiple spaces with a single space
-    text = re.sub(r"\s+", " ", text)
-    # Strip leading and trailing spaces
-    text = text.strip()
-    # Make all text lower-case
-    text = text.lower()
-    return text
-
-# Clean the text by removing unwanted metadata and extracting necessary information
-def extract_metadata(text):
-    # Extract metadata information using regex
-    title_match = re.search(r"Title:\s*(.*?)\s*\n", text)
-    author_match = re.search(r"Author:\s*(.*?)\s*\n", text)
-    language_match = re.search(r"Language:\s*(.*?)\s*\n", text)
-
-    # Extracted metadata values
-    title = title_match.group(1) if title_match else "Unknown Title"
-    author = author_match.group(1) if author_match else "Unknown Author"
-    language = language_match.group(1) if language_match else "Unknown Language"
-    return title, author, language
-
 #scarlet_book = download_book("https://www.gutenberg.org/cache/epub/244/pg244.txt") # A Study in Scarlet raw text
 valley_book = download_book("https://www.gutenberg.org/cache/epub/3289/pg3289.txt") # The Valley of Fear raw text
 #sign_book = download_book("https://www.gutenberg.org/cache/epub/2097/pg2097.txt") # The Sign of the Four raw text
@@ -77,24 +45,3 @@ valley_book = download_book("https://www.gutenberg.org/cache/epub/3289/pg3289.tx
 #print(extract_metadata(holmes_collection[3]))
 #print(extract_metadata(holmes_collection[4]))
 
-
-# Save to JSON file
-[
-  {
-    "title": "A Study in Scarlet",
-    "author": "Arthur Conan Doyle",
-    "language": "English",
-    "year": 1887,
-    "word_count": 67000,
-    "text": "full text here"
-  },
-  {
-    "title": "The Valley of Fear",
-    "author": "Arthur Conan Doyle",
-    "language": "English",
-    "year": 1915,
-    "word_count": 85000,
-    "text": "full text here"
-  },
-  ...
-]

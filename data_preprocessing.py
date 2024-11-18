@@ -1,4 +1,7 @@
 
+import re
+import requests # Note -- external package
+import json
 
 
 def clean_text(text):
