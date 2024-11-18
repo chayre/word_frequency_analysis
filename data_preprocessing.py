@@ -1,7 +1,7 @@
-
 import re
-import requests # Note -- external package
 import json
+
+from data_collection import holmes_collection_raw
 
 
 def clean_text(text):
@@ -28,13 +28,15 @@ def clean_text(text):
 
 # Clean the text by removing unwanted metadata and extracting necessary information
 def extract_metadata(text):
-    # Extract metadata information using regex
+    # Extract metadata information using regex; same format in all Project Gutenberg text files
     title_match = re.search(r"Title:\s*(.*?)\s*\n", text)
     author_match = re.search(r"Author:\s*(.*?)\s*\n", text)
     language_match = re.search(r"Language:\s*(.*?)\s*\n", text)
-
-    # Extracted metadata values
+    
+    # Return extracted metadata values or failsafe
     title = title_match.group(1) if title_match else "Unknown Title"
     author = author_match.group(1) if author_match else "Unknown Author"
     language = language_match.group(1) if language_match else "Unknown Language"
     return title, author, language
+
+print(clean_text(holmes_collection_raw[1]))
