@@ -15,9 +15,9 @@ def clean_text(text):
     text = text.replace("'", "")
     text = text.replace("’", "") # Accounts for funky ’, which differs from regular apostrophe '
     # Replace punctuation with space 
-    text = re.sub(r"[^\w\s]", " ", text)  # This replaces all punctuation except letters and whitespace 
+    text = re.sub(r"[^\w\s]", " ", text) 
     # Replace dashes (hyphen, en dash, em dash) with spaces to preserve word separation
-    text = re.sub(r"[\u2014\u2013-]", " ", text)  # This replaces em dash, en dash, and hyphen
+    text = re.sub(r"[\u2014\u2013-]", " ", text) 
     # Replace multiple spaces with a single space
     text = re.sub(r"\s+", " ", text)
     # Strip leading and trailing spaces
@@ -32,7 +32,7 @@ def extract_metadata(text):
     title_match = re.search(r"Title:\s*(.*?)\s*\n", text)
     author_match = re.search(r"Author:\s*(.*?)\s*\n", text)
     language_match = re.search(r"Language:\s*(.*?)\s*\n", text)
-    
+
     # Return extracted metadata values or failsafe
     title = title_match.group(1) if title_match else "Unknown Title"
     author = author_match.group(1) if author_match else "Unknown Author"
