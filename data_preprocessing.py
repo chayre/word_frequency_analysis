@@ -1,11 +1,12 @@
+"""Process the raw data so that it is ready for textual analysis"""
 import re
-import json
+import NLTK
 
-from data_collection import holmes_collection_raw
+#stopwords = ["i", "me", "my", "myself", "we", "our", "ours", "ourselves", #"you", "your", "yours", "yourself", "yourselves", "he", "him", "his", #"himself", "she", "her", "hers", "herself", "it", "its", "itself", "they", #"them", "their", "theirs", "themselves", "what", "which", "who", "whom", #"this", "that", "these", "those", "am", "is", "are", "was", "were", "be", #"been", "being", "have", "has", "had", "having", "do", "does", "did", "doing", #"a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while", #"of", "at", "by", "for", "with", "about", "against", "between", "into", #"through", "during", "before", "after", "above", "below", "to", "from", "up", #"down", "in", "out", "on", "off", "over", "under", "again", "further", "then", #"once", "here", "there", "when", "where", "why", "how", "all", "any", "both", #"each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", #"only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", #"just", "dont", "should", "now", "shouldnt", "wont", "cant", "havent", "ii", #"iii", "iv", "v", "vi", "vii", "viii", "ix", "x", "xi", "xii"]
 
-
-def clean_text(text):
-    # Remove the introductory Project Gutenberg text (before the actual book starts)
+def process_text(text):
+    """Convert raw text to processed text."""
+    # Remove the introductory Project Gutenberg text (before the book starts)
     text = re.sub(r"^.*?( \*\*\*)", "", text, flags=re.DOTALL)
     # Remove the end Project Gutenberg text (after the book ends)
     text = re.sub(r"(END OF THE PROJECT GUTENBERG EBOOK.*)", "", text, flags=re.DOTALL)
@@ -13,11 +14,14 @@ def clean_text(text):
     text = re.sub(r"\d+", "", text)
      # Remove apostrophes
     text = text.replace("'", "")
-    text = text.replace("’", "") # Accounts for funky ’, which differs from regular apostrophe '
+    text = text.replace("’", "") # Accounts for funky ’, which differs from regular apostrophe, '
     # Replace punctuation with space 
     text = re.sub(r"[^\w\s]", " ", text) 
     # Replace dashes (hyphen, en dash, em dash) with spaces to preserve word separation
-    text = re.sub(r"[\u2014\u2013-]", " ", text) 
+    text = re.sub(r"[\u2014\u2013\-_()]", " ", text)
+    # Remove stopwords
+    stopwords_pattern = r'\b(?:' + '|'.join(map(re.escape, stopwords)) + r')\b'
+    text = re.sub(stopwords_pattern, "", text, flags=re.IGNORECASE)
     # Replace multiple spaces with a single space
     text = re.sub(r"\s+", " ", text)
     # Strip leading and trailing spaces
@@ -26,17 +30,7 @@ def clean_text(text):
     text = text.lower()
     return text
 
-# Clean the text by removing unwanted metadata and extracting necessary information
-def extract_metadata(text):
-    # Extract metadata information using regex; same format in all Project Gutenberg text files
-    title_match = re.search(r"Title:\s*(.*?)\s*\n", text)
-    author_match = re.search(r"Author:\s*(.*?)\s*\n", text)
-    language_match = re.search(r"Language:\s*(.*?)\s*\n", text)
-
-    # Return extracted metadata values or failsafe
-    title = title_match.group(1) if title_match else "Unknown Title"
-    author = author_match.group(1) if author_match else "Unknown Author"
-    language = language_match.group(1) if language_match else "Unknown Language"
-    return title, author, language
-
-print(clean_text(holmes_collection_raw[1]))
+def process_all_books(books_raw):
+    for book in books_raw:
+        cleaned_text = process_text(book["text"])  # Clean the raw text
+        book["text"] = cleaned_text  # Replace the raw text with the cleaned version
