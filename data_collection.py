@@ -4,12 +4,12 @@
 # I also assume that Project Gutenberg text files begin with a title, author, and language section. I use this to construct the metadata in my JSON.
 # Only downloading the four Sherlock Holmes novels and the most popular collection of Sherlock Holmes short stories
 
-import requests # Note -- external package
 import re 
 import json
+import requests # Note -- external package
 
 # URLs for the 5 Sherlock Holmes books
-URLS = [
+urls = [
     "https://www.gutenberg.org/cache/epub/244/pg244.txt",  # A Study in Scarlet
     "https://www.gutenberg.org/cache/epub/3289/pg3289.txt",  # The Valley of Fear
     "https://www.gutenberg.org/cache/epub/2097/pg2097.txt",  # The Sign of the Four
@@ -49,10 +49,10 @@ def load_or_download_books():
                 raise ValueError("The JSON file is empty.")
     except (FileNotFoundError, ValueError):
         # Download books to a JSON file if they haven't been downloaded
-        print("Error loading books_raw.json. Downloading books...")
+        print("Unable to load books_raw.json. Downloading books...")
         
         books = []
-        for url in URLS:
+        for url in urls:
             raw_text = download_book(url)
             if raw_text:
                 metadata = extract_metadata(raw_text)
@@ -60,7 +60,17 @@ def load_or_download_books():
                 books.append(metadata)
         
         # Save all books to the JSON file
-        with open("books_raw.json", "w", encoding="utf-8") as file:
-            json.dump(books, file, indent=4)
-            rawbooks = json.load(file)
+        #with open("books_raw.json", "w", encoding="utf-8") as file:
+          #  json.dump(books, file, indent=4)
+          #  rawbooks = json.load(file)
+
+
+
+         # Save all books to the JSON file
+        with open("books_raw.json", "w", encoding="utf-8") as f:
+            json.dump(books, f, indent=4)
+
+        # Reopen the file to read the saved data
+        with open("books_raw.json", "r", encoding="utf-8") as f:
+            rawbooks = json.load(f)            
     return rawbooks
