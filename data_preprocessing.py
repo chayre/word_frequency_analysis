@@ -3,6 +3,7 @@ import re
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
 nltk.download('punkt', quiet=True)
 nltk.download('punkt_tab', quiet=True)
 nltk.download('wordnet', quiet=True)
@@ -30,9 +31,13 @@ def preprocess_text(text):
     text = text.strip()
     # Tokenize the text
     text = word_tokenize(text)
+    # Lemmatize the text (rocks -> rock)
+    lemmatized_text = []
+    for w in text:
+        lemmatized_text.append(WordNetLemmatizer().lemmatize(w))
     # Recreate the tokenized list but without NLTK stopwords
     filtered_sentence = []
-    for w in text:
+    for w in lemmatized_text:
         if w not in stopwords.words('english'):
             filtered_sentence.append(w)
     return filtered_sentence

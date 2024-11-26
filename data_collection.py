@@ -4,7 +4,7 @@
 # I also assume that Project Gutenberg text files begin with a title, author, and language section. I use this to construct the metadata in my JSON.
 # Only downloading the four Sherlock Holmes novels and the most popular collection of Sherlock Holmes short stories
 
-import re 
+import re
 import json
 import requests # Note -- external package
 
@@ -40,7 +40,7 @@ def extract_metadata(raw_text):
 
     return {"title": title, "author": author, "language": language}
 
-# Load raw books, if available; if not, redownload them
+# Load raw books if available; if not, redownload them
 def load_or_download_books():
     try: 
         with open("books_raw.json", "r", encoding="utf-8") as f:
@@ -50,7 +50,6 @@ def load_or_download_books():
     except (FileNotFoundError, ValueError):
         # Download books to a JSON file if they haven't been downloaded
         print("Unable to load books_raw.json. Downloading books...")
-        
         books = []
         for url in urls:
             raw_text = download_book(url)
@@ -58,18 +57,9 @@ def load_or_download_books():
                 metadata = extract_metadata(raw_text)
                 metadata["text"] = raw_text  # Include the full raw text
                 books.append(metadata)
-        
-        # Save all books to the JSON file
-        #with open("books_raw.json", "w", encoding="utf-8") as file:
-          #  json.dump(books, file, indent=4)
-          #  rawbooks = json.load(file)
-
-
-
          # Save all books to the JSON file
         with open("books_raw.json", "w", encoding="utf-8") as f:
             json.dump(books, f, indent=4)
-
         # Reopen the file to read the saved data
         with open("books_raw.json", "r", encoding="utf-8") as f:
             rawbooks = json.load(f)            
