@@ -3,6 +3,8 @@
 # However, I do not remove some details which would be found in a book such as table of contents; I assume this to be part of the text.
 # I also assume that Project Gutenberg text files begin with a title, author, and language section. I use this to construct the metadata in my JSON.
 # Only downloading the four Sherlock Holmes novels and the most popular collection of Sherlock Holmes short stories
+# qtbase5-dev downloaded, wayland5
+#export QT_QPA_PLATFORM=xcb
 
 import re
 import json
