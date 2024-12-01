@@ -20,7 +20,7 @@ def preprocess_text(text):
     # Remove digits
     text = re.sub(r"\d+", "", text)
     # Remove Roman numerals (chapter numbers) and other words not handled correctly by NLTK
-    text = re.sub(r"\b(ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii|was|has|yes|said|us|would|could)\b", "", text)
+    text = re.sub(r"\b(ii|iii|iv|v|vi|vii|viii|ix|x|xi|xii|was|has|yes|said|us|would|could|upon|one|two|well|may)\b", "", text)
     # Replace punctuation with space 
     text = re.sub(r"[^\w\s]", " ", text) 
     # Replace dashes (hyphen, en dash, em dash) with spaces to preserve word separation
