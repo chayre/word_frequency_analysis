@@ -2,14 +2,14 @@ from os import path
 import os
 import numpy as np
 import pandas as pd
+import seaborn as sns # External
 from wordcloud import WordCloud # External
 from PIL import Image
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from random import seed
-import re
-from itertools import cycle
 from data_analysis import calculate_mean_word_length
+
 
 def generate_color_map(common_words):
     """
@@ -34,13 +34,14 @@ def create_color_func(color_map):
         return tuple(int(c * 255) for c in color[:3])  # Convert to RGB
     return color_func
 
-def create_wordcloud(books_text, color_function):
+def create_wordcloud(books_text, color_function, unique_chart=False):
     """
     Generate and plot a wordcloud for most common words.
 
     Args:
         books_text (dict): A dictionary of books with processed text.
         color_function (function): Passes colors assigned to most common words.
+        unique_chart (bool): True only if it a unique wordchart (as opposed to a most common wordchart) is desired.
     """
     #Create mask in the shape of a magnifying glass
     d = path.dirname(__file__) if "__file__" in locals() else os.getcwd()
@@ -64,8 +65,13 @@ def create_wordcloud(books_text, color_function):
         ax.axis("off") 
         ax.set_title(title, fontsize=16, pad=10, loc='center') 
     # Adjust layout and display
+    plt.suptitle(
+        "Unique Words" if unique_chart else "Most Common Words",
+        fontsize=16
+    )
     plt.tight_layout()
     plt.show()
+    
 
 def create_barchart(books_common_words, color_map, normalize=False, books_text=None):
     """
@@ -84,10 +90,8 @@ def create_barchart(books_common_words, color_map, normalize=False, books_text=N
             total_words = len(books_text[title].split())
             normalized_common_words[title] = [(word, count / total_words) for word, count in words]
         books_common_words = normalized_common_words
-
     # Plot most common words
     fig, axes = plt.subplots(nrows=1, ncols=len(books_common_words), figsize=(18, 6), sharey=True)
-    
     # If there is only one subplot, axes will not be a list; convert to list
     if len(books_common_words) == 1:
         axes = [axes] 
@@ -138,5 +142,41 @@ def create_mean_word_length_chart(text_dict, number_common_words):
     plt.ylabel('Mean Word Length', fontsize=12)
     plt.grid(axis='y', linestyle='--', alpha=0.7)
     # Display
+    plt.tight_layout()
+    plt.show()
+
+def plot_tfidf_heatmap(tfidf_df, top_n=10):
+    """
+    Plot a heatmap of TF-IDF scores for the top N words per book.
+    
+    Args:
+        tfidf_df (pd.DataFrame): The DataFrame containing TF/IDF/TF-IDF data.
+        top_n (int): Number of top words per book to include.
+    """
+    # Filter top N words per book
+    top_words = (
+        tfidf_df.groupby("Book")
+        .apply(lambda x: x.nlargest(top_n, "TF-IDF"))
+        .reset_index(drop=True)
+    )
+    # Pivot table to create a matrix for heatmap
+    heatmap_data = top_words.pivot_table(
+        index="Word", columns="Book", values="TF-IDF", fill_value=0
+    )
+    # Plot heatmap
+    plt.figure(figsize=(12, 8))
+    sns.heatmap(
+        heatmap_data,
+        cmap="YlGnBu",
+        annot=True,
+        fmt=".2f",
+        cbar_kws={"label": "TF-IDF Score"},
+        linecolor='black',  
+        linewidths=1        
+    )
+    plt.title(f"Heatmap of Common Words by TF-IDF Scores Across Books")
+    plt.ylabel("Words")
+    plt.xlabel("Books")
+    plt.xticks(rotation=45)
     plt.tight_layout()
     plt.show()

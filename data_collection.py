@@ -8,7 +8,7 @@
 
 import re
 import json
-import requests # Note -- external package
+import requests
 
 # URLs for the 5 Sherlock Holmes books
 urls = [
