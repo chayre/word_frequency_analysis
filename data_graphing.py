@@ -10,7 +10,6 @@ import matplotlib.cm as cm
 from random import seed
 from data_analysis import calculate_mean_word_length
 
-
 def generate_color_map(common_words):
     """
     Generate a color map dictionary based on the given common words.
@@ -57,8 +56,8 @@ def create_wordcloud(books_text, color_function, unique_chart=False):
         wc = WordCloud(
             background_color="white",
             mask=mask_image,
-            width=1600,
-            height=1000,
+            width=1200,
+            height=750,
             color_func=color_function  # Apply consistent color function
         ).generate(text)
         ax.imshow(wc, interpolation="bilinear")
@@ -172,11 +171,27 @@ def plot_tfidf_heatmap(tfidf_df, top_n=10):
         fmt=".2f",
         cbar_kws={"label": "TF-IDF Score"},
         linecolor='black',  
-        linewidths=1        
+        linewidths=1
     )
     plt.title(f"Heatmap of Common Words by TF-IDF Scores Across Books")
     plt.ylabel("Words")
     plt.xlabel("Books")
     plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
+def plot_cooccurrence_heatmap(cooccurrence_df):
+    '''
+    Plot a heatmap of the co-occurrence matrix.
+
+    Args:
+    cooccurrence_df (pandas.DataFrame): DataFrame containing the co-occurrence matrix.
+    '''
+    plt.figure(figsize=(10, 8))
+    plt.title('Co-occurrence Heatmap')
+    plt.imshow(cooccurrence_df, cmap='Blues', interpolation='none')
+    plt.colorbar(label='Co-occurrence Count')
+    plt.xticks(ticks=np.arange(len(cooccurrence_df.columns)), labels=cooccurrence_df.columns, rotation=90)
+    plt.yticks(ticks=np.arange(len(cooccurrence_df.index)), labels=cooccurrence_df.index)
     plt.tight_layout()
     plt.show()

@@ -21,7 +21,11 @@ urls = [
 
 # URL request; return plain text if successful 
 def download_book(url):
-    """Download a book's text from the given URL."""
+    """
+    Download the text from a given URL.
+    Args: 
+        url (string): Contains a Project Gutenberg URL.
+    """
     response = requests.get(url)
     if response.status_code == 200:  # HTTP status code for OK
         return response.text
@@ -31,19 +35,24 @@ def download_book(url):
 
 # Get title, author, and language from the downloaded text
 def extract_metadata(raw_text):
-    """Extract metadata from the raw text."""
+    """
+    Extract metadata from the raw text.
+    Args: 
+        raw_text (string): Contains the unprocessed, downloaded text 
+    """
     title_match = re.search(r"Title:\s*(.*?)\s*\n", raw_text)
     author_match = re.search(r"Author:\s*(.*?)\s*\n", raw_text)
     language_match = re.search(r"Language:\s*(.*?)\s*\n", raw_text)
-
     title = title_match.group(1) if title_match else "Unknown Title"
     author = author_match.group(1) if author_match else "Unknown Author"
     language = language_match.group(1) if language_match else "Unknown Language"
-
     return {"title": title, "author": author, "language": language}
 
 # Load raw books if available; if not, redownload them
 def load_or_download_books():
+    """
+    If the book has not already been downloaded, download it, extract metadata, and save to a JSON file. If the book has been downloaded, load the JSON file and open it.
+    """
     try: 
         with open("books_raw.json", "r", encoding="utf-8") as f:
             rawbooks = json.load(f) 
@@ -64,5 +73,5 @@ def load_or_download_books():
             json.dump(books, f, indent=4)
         # Reopen the file to read the saved data
         with open("books_raw.json", "r", encoding="utf-8") as f:
-            rawbooks = json.load(f)            
+            rawbooks = json.load(f)
     return rawbooks

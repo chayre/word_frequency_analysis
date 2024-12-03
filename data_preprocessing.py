@@ -10,7 +10,10 @@ nltk.download('wordnet', quiet=True)
 nltk.download('omw-1.4', quiet=True)
 
 def preprocess_text(text):
-    """Convert raw text to preprocessed text."""
+    """Convert raw text to preprocessed text.
+        Args: 
+            text (string): Contains the unprocessed, downloaded text 
+    """
     # Make all text lower-case
     text = text.lower()
     # Remove the introductory Project Gutenberg text (before the book starts)
@@ -36,13 +39,17 @@ def preprocess_text(text):
     for w in text:
         lemmatized_text.append(WordNetLemmatizer().lemmatize(w))
     # Recreate the tokenized list but without NLTK stopwords
-    filtered_sentence = []
+    filtered_text = []
     for w in lemmatized_text:
         if w not in stopwords.words('english'):
             filtered_sentence.append(w)
-    return filtered_sentence
+    return filtered_text
 
 def preprocess_all_books(books_raw):
+    """Convert raw text to preprocessed text.
+        Args: 
+            books_raw (json object): Contains all of the raw books - their text and metadata 
+    """
     for book in books_raw:
         cleaned_text = preprocess_text(book["text"])  # Clean the raw text
         book["text"] = cleaned_text  # Replace the raw text with the cleaned version

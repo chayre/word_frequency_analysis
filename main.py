@@ -4,10 +4,8 @@ from os import path
 import json
 from data_collection import load_or_download_books
 from data_preprocessing import preprocess_all_books
-from data_analysis import return_most_common, unique_words_from_texts, calculate_tf_idf
-from data_graphing import create_wordcloud, create_barchart, create_mean_word_length_chart, generate_color_map, create_color_func, plot_tfidf_heatmap
-
-
+from data_analysis import return_most_common, unique_words_from_texts, calculate_tf_idf, calculate_word_pair_frequencies
+from data_graphing import create_wordcloud, create_barchart, create_mean_word_length_chart, generate_color_map, create_color_func, plot_tfidf_heatmap, plot_cooccurrence_heatmap
 
 def main():
     # Load raw books, if available; if not, redownload them
@@ -20,7 +18,6 @@ def main():
     # Save the processed text back to a new JSON file
     #with open("books_cleaned.json", "w", encoding="utf-8") as file:
         #json.dump(books, file, indent=4, ensure_ascii=False)  
-        #print("All text has been preprocessed and saved to books_cleaned.json")
 
     # Read the processed text and analyze
     with open("books_cleaned.json", "r", encoding="utf-8") as f:
@@ -40,6 +37,12 @@ def main():
     # 10 most common words for all of the novels
     all_text_common_words  = {
         "Sherlock Holmes Novels": return_most_common(all_text["Sherlock Holmes Novels"], 10),
+    }
+
+    # 10 most common words for all of the novels (without count)
+    common_word_list = {
+        book: [word for word, _ in words]
+        for book, words in all_text_common_words.items()
     }
 
     # Take the most common words and assign a color to them which is consistent for graphical analysis. Wordclouds use a color function, barcharts use a color mapping
@@ -63,13 +66,16 @@ def main():
     #create_barchart(all_text_common_words, color_map)
 
     # Create a line chart which shows the average length of the top n (in this case, 30) words for each novel
-    create_mean_word_length_chart(books_text, 50)
+    #create_mean_word_length_chart(books_text, 50)
 
     # Create 5 wordclouds for each of the novels, showing unique words in each
-    create_wordcloud({title: ' '.join(words) for title, words in unique_words_from_texts(books_text).items()}, color_func, True)
+    #create_wordcloud({title: ' '.join(words) for title, words in unique_words_from_texts(books_text).items()}, color_func, True)
 
     # Create a TF-IDF heatmap
-    plot_tfidf_heatmap(calculate_tf_idf(books_common_words))
+    #plot_tfidf_heatmap(calculate_tf_idf(books_common_words))  
+
+    # Create a co-occurence heatmap for the 10 most common words (windowsize 2)
+    plot_cooccurrence_heatmap(calculate_word_pair_frequencies(all_text, common_word_list, 2))
 
 if __name__ == "__main__":
     main()

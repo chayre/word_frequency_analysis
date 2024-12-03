@@ -1,8 +1,11 @@
 from collections import Counter
 from itertools import chain
+from itertools import combinations
+import itertools
 import re
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 def unique_words_from_texts(book_texts):
     '''
@@ -82,3 +85,92 @@ def calculate_tf_idf(word_frequencies):
     tf_df['IDF'] = tf_df['Word'].map(idf_scores)
     tf_df['TF-IDF'] = tf_df['TF'] * tf_df['IDF']
     return tf_df
+
+def generate_word_pairs(words, window_size):
+    '''
+    Generate word pairs within a sliding window.
+
+    Args:
+    words (list): List of words (filtered to include only common words).
+    window_size (int): The size of the sliding window for generating word pairs.
+
+    Returns:
+    list: A list of word pairs (tuples).
+    '''
+    word_pairs = []
+    
+    # Sliding window to generate word pairs
+    for i in range(len(words) - window_size + 1):
+        window = words[i:i + window_size]
+        word_pairs.extend(combinations(window, 2))  # Generate all pairs within the window
+    
+    return word_pairs
+
+def calculate_word_pair_frequencies(all_text, common_word_list, window_size):
+    '''
+    Calculate co-occurrence frequencies for word pairs within a sliding window.
+
+    Args:
+    all_text (dict): A dictionary where keys are book titles and values are full texts.
+    common_word_list (dict): A dictionary where keys are book titles and values are lists of common words.
+    window_size (int): The size of the sliding window for generating word pairs.
+
+    Returns:
+    pandas.DataFrame: Co-occurrence matrix (heatmap) of word pairs.
+    '''
+    # Initialize a Counter to track word pair frequencies
+    pair_freq = Counter()
+
+    for title, text in all_text.items():
+        if title not in common_word_list:
+            print(f"Skipping {title} as it has no common words defined.")
+            continue
+
+        # Get the list of common words for this book
+        common_words = common_word_list[title]
+        common_word_set = set(common_words)
+
+        # Filter the text to only include common words
+        filtered_words = [word for word in text.split() if word in common_word_set]
+        
+        # Generate word pairs using the sliding window
+        word_pairs = generate_word_pairs(filtered_words, window_size)
+        
+        # Count the frequency of each pair
+        for word1, word2 in word_pairs:
+            pair_freq[(word1, word2)] += 1
+            pair_freq[(word2, word1)] += 1  # Ensure the matrix is symmetric
+
+    # Create a co-occurrence matrix
+    unique_words = sorted(set([word for pair in pair_freq.keys() for word in pair]))
+    word_index = {word: idx for idx, word in enumerate(unique_words)}
+    
+    # Initialize the co-occurrence matrix
+    cooccurrence_matrix = np.zeros((len(unique_words), len(unique_words)), dtype=int)
+
+    # Populate the co-occurrence matrix
+    for (word1, word2), count in pair_freq.items():
+        i, j = word_index[word1], word_index[word2]
+        cooccurrence_matrix[i, j] = count
+        cooccurrence_matrix[j, i] = count  # Symmetric matrix
+
+    # Create a DataFrame for easier visualization
+    cooccurrence_df = pd.DataFrame(cooccurrence_matrix, index=unique_words, columns=unique_words)
+
+    return cooccurrence_df
+
+def plot_cooccurrence_heatmap(cooccurrence_df):
+    '''
+    Plot a heatmap of the co-occurrence matrix.
+
+    Args:
+    cooccurrence_df (pandas.DataFrame): DataFrame containing the co-occurrence matrix.
+    '''
+    plt.figure(figsize=(10, 8))
+    plt.title('Co-occurrence Heatmap')
+    plt.imshow(cooccurrence_df, cmap='Blues', interpolation='none')
+    plt.colorbar(label='Co-occurrence Count')
+    plt.xticks(ticks=np.arange(len(cooccurrence_df.columns)), labels=cooccurrence_df.columns, rotation=90)
+    plt.yticks(ticks=np.arange(len(cooccurrence_df.index)), labels=cooccurrence_df.index)
+    plt.tight_layout()
+    plt.show()
