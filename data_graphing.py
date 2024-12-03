@@ -13,7 +13,6 @@ from data_analysis import calculate_mean_word_length
 def generate_color_map(common_words):
     """
     Generate a color map dictionary based on the given common words.
-
     Args:
         common_words (dict): A dictionary with top N common words listed beside their count, for each text.
     """
@@ -23,7 +22,6 @@ def generate_color_map(common_words):
 def create_color_func(color_map):
     """
     Create a color function (and convert to RGB values) for the WordCloud library.
-    
     Args:
         color_map (dict): A dictionary of words with predefined colors
     """
@@ -36,7 +34,6 @@ def create_color_func(color_map):
 def create_wordcloud(books_text, color_function, unique_chart=False):
     """
     Generate and plot a wordcloud for most common words.
-
     Args:
         books_text (dict): A dictionary of books with processed text.
         color_function (function): Passes colors assigned to most common words.
@@ -75,7 +72,6 @@ def create_wordcloud(books_text, color_function, unique_chart=False):
 def create_barchart(books_common_words, color_map, normalize=False, books_text=None):
     """
     Generate and plot barcharts for word counts or frequencies.
-
     Args:
         books_common_words (dict): A dictionary of books with their most common words and counts.
         color_map (dict): A mapping of words to colors for consistent visual representation.
@@ -120,7 +116,6 @@ def create_barchart(books_common_words, color_map, normalize=False, books_text=N
 def create_mean_word_length_chart(text_dict, number_common_words):
     '''
     Create a line chart for the mean word lengths of the most common words in books.
-
     Args:
         text_dict (dict): A dictionary where keys are book titles and values are texts
         number_common_words (int): The number of most common words to calculate average length of 
@@ -147,7 +142,6 @@ def create_mean_word_length_chart(text_dict, number_common_words):
 def plot_tfidf_heatmap(tfidf_df, top_n=10):
     """
     Plot a heatmap of TF-IDF scores for the top N words per book.
-    
     Args:
         tfidf_df (pd.DataFrame): The DataFrame containing TF/IDF/TF-IDF data.
         top_n (int): Number of top words per book to include.
@@ -180,18 +174,88 @@ def plot_tfidf_heatmap(tfidf_df, top_n=10):
     plt.tight_layout()
     plt.show()
 
-def plot_cooccurrence_heatmap(cooccurrence_df):
-    '''
-    Plot a heatmap of the co-occurrence matrix.
+
+def plot_cooccurrence_heatmap(cooccurrence_matrices, common_word_list, window_size):
+    """
+    Plot a heatmap of the co-occurrence frequencies for each book.
 
     Args:
-    cooccurrence_df (pandas.DataFrame): DataFrame containing the co-occurrence matrix.
-    '''
-    plt.figure(figsize=(10, 8))
-    plt.title('Co-occurrence Heatmap')
-    plt.imshow(cooccurrence_df, cmap='Blues', interpolation='none')
-    plt.colorbar(label='Co-occurrence Count')
-    plt.xticks(ticks=np.arange(len(cooccurrence_df.columns)), labels=cooccurrence_df.columns, rotation=90)
-    plt.yticks(ticks=np.arange(len(cooccurrence_df.index)), labels=cooccurrence_df.index)
-    plt.tight_layout()
+        cooccurrence_matrices (dict): Dictionary where keys are book titles and values are co-occurrence matrices.
+        common_word_list (dict): Dictionary where keys are book titles and values are lists of common words.
+        window_size (int): The size of the window to check for word co-occurrences.
+
+    Returns:
+        None
+    """
+    for book, matrix in cooccurrence_matrices.items():
+        words = common_word_list[book]  # Get the corresponding common words for the current book
+        # Set up the figure
+        plt.figure(figsize=(10, 8))
+        
+        # Create the heatmap
+        heatmap = sns.heatmap(
+            np.log1p(matrix),
+            xticklabels=words,
+            yticklabels=words,
+            cmap='Blues',
+            annot=False,
+            cbar_kws={'label': 'Log of Co-occurrence Count'},
+            linecolor='black',  
+            linewidths=0.5
+        )
+        
+        # Add title and axis labels
+        plt.title(f"{book} Co-occurrence Heatmap; Log Count of {window_size + 2}-word Segments with Both Key Words")
+        plt.xlabel('Words')
+        plt.ylabel('Words')
+        
+        # Show the heatmap for this book
+        plt.show()
+
+def plot_ngrams(ngram_frequencies, top_n, n_gram_length):
+    """
+    Plot the most frequent n-grams for up to 5 books in subplots.
+    Args:
+        ngram_frequencies (dict): Dictionary with book titles as keys and n-gram frequency counters as values.
+        top_n (int): Number of top n-grams to display.
+        n_gram_length (int): length of the n-grams being analyzed.
+    """
+    # Limit to 5 books for display
+    n_books = min(len(ngram_frequencies), 5)
+    books_to_plot = list(ngram_frequencies.items())[:n_books]
+
+    fig, axes = plt.subplots(nrows=1, ncols=n_books, figsize=(18, 6), sharey=True)
+    if n_books == 1:
+        axes = [axes]  # Ensure axes is iterable when only one subplot
+
+    for ax, (title, freq) in zip(axes, books_to_plot):
+        # Get top n n-grams and their counts
+        most_common = freq.most_common(top_n)
+        ngrams, counts = zip(*most_common)
+
+        # Plot data
+        bars = ax.bar(range(len(ngrams)), counts, color='blue')
+
+        # Title and axis labels
+        ax.set_title(title, fontsize=12)
+        ax.set_xticks(range(len(ngrams)))
+        ax.set_xticklabels([' '.join(ng) for ng in ngrams], rotation=45, ha="right", fontsize=8)
+        ax.set_xlabel("N-Grams", fontsize=10)
+        ax.set_ylabel("Count", fontsize=12)
+        ax.grid(axis="y", linestyle="--", alpha=0.7)
+
+        # Annotate bars with counts
+        for bar, count in zip(bars, counts):
+            ax.text(
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + 0.01,
+                str(count),
+                ha='center',
+                va='bottom',
+                fontsize=7
+            )
+
+    # Overall title and adjustments
+    fig.suptitle(f"Top {top_n} N-Grams of Length {n_gram_length}", fontsize=16)
+    fig.tight_layout()
     plt.show()

@@ -1,4 +1,5 @@
 from collections import Counter
+from collections import defaultdict
 from itertools import chain
 from itertools import combinations
 import itertools
@@ -11,7 +12,6 @@ def unique_words_from_texts(book_texts):
     '''
     Identify unique words for each book based on their word frequencies.
     Return a dictionary with book titles as keys and unique words for each book as the value. 
-
     Args:
         book_texts (dict): Dictionary with book titles as keys and full text as values.
     '''
@@ -31,7 +31,6 @@ def unique_words_from_texts(book_texts):
 def return_most_common(text, number_common_words):
     '''
     Returns the top [number_common_words] most common words for a text.
-
     Args:
         text (string): The full text of the novel to be analyzed 
         number_common_words (int): What number of most common words to return 
@@ -43,7 +42,6 @@ def return_most_common(text, number_common_words):
 def calculate_mean_word_length(text_dict, number_common_words):
     '''
     Calculate the mean length of the most common words for each book.
-
     Args:
         text (dict): A dictionary where keys are book titles and 
         values are full texts
@@ -62,9 +60,8 @@ def calculate_mean_word_length(text_dict, number_common_words):
 def calculate_tf_idf(word_frequencies):
     '''
     Calculate TF-IDF scores for common words across books.
-
     Args:
-    word_frequencies (dict): Dictionary with book titles as keys and list of tuples (word, frequency) as values.
+        word_frequencies (dict): Dictionary with book titles as keys and list of tuples (word, frequency) as values.
     '''
     # Total number of documents
     num_texts = len(word_frequencies)
@@ -86,91 +83,87 @@ def calculate_tf_idf(word_frequencies):
     tf_df['TF-IDF'] = tf_df['TF'] * tf_df['IDF']
     return tf_df
 
-def generate_word_pairs(words, window_size):
-    '''
-    Generate word pairs within a sliding window.
-
-    Args:
-    words (list): List of words (filtered to include only common words).
-    window_size (int): The size of the sliding window for generating word pairs.
-
-    Returns:
-    list: A list of word pairs (tuples).
-    '''
-    word_pairs = []
-    
-    # Sliding window to generate word pairs
-    for i in range(len(words) - window_size + 1):
-        window = words[i:i + window_size]
-        word_pairs.extend(combinations(window, 2))  # Generate all pairs within the window
-    
-    return word_pairs
-
 def calculate_word_pair_frequencies(all_text, common_word_list, window_size):
-    '''
-    Calculate co-occurrence frequencies for word pairs within a sliding window.
+    """
+    Calculate co-occurrence frequencies of common words within a window size in the given texts.
 
     Args:
-    all_text (dict): A dictionary where keys are book titles and values are full texts.
-    common_word_list (dict): A dictionary where keys are book titles and values are lists of common words.
-    window_size (int): The size of the sliding window for generating word pairs.
+        all_text (dict): Dictionary with title as key and corresponding full texts as value.
+        common_word_list (dict): Dictionary with title as key and lists of common words as values.
+        window_size (int): The size of the window to check for word co-occurrences.
 
     Returns:
-    pandas.DataFrame: Co-occurrence matrix (heatmap) of word pairs.
-    '''
-    # Initialize a Counter to track word pair frequencies
-    pair_freq = Counter()
+        dict: Co-occurrence matrices for each text identifier.
+    """
+    cooccurrence_matrices = {}
+    for book, text in all_text.items():
+        # List of common words for the current book
+        common_words = common_word_list[book]
+        word_indices = [i for i, word in enumerate(text.split()) if word in common_words]
 
-    for title, text in all_text.items():
-        if title not in common_word_list:
-            print(f"Skipping {title} as it has no common words defined.")
-            continue
+        # Initialize the co-occurrence matrix
+        matrix = np.zeros((len(common_words), len(common_words)), dtype=int)
+        word_to_index = {word: i for i, word in enumerate(common_words)}
 
-        # Get the list of common words for this book
-        common_words = common_word_list[title]
-        common_word_set = set(common_words)
+        # Set to track already counted indices
+        counted_indices = set()
 
-        # Filter the text to only include common words
-        filtered_words = [word for word in text.split() if word in common_word_set]
-        
-        # Generate word pairs using the sliding window
-        word_pairs = generate_word_pairs(filtered_words, window_size)
-        
-        # Count the frequency of each pair
-        for word1, word2 in word_pairs:
-            pair_freq[(word1, word2)] += 1
-            pair_freq[(word2, word1)] += 1  # Ensure the matrix is symmetric
+        # Iterate through words and count co-occurrences
+        words = text.split()
+        idx = 0  # Pointer to the current word index
+        while idx < len(word_indices):
+            word_idx = word_indices[idx]
+            if word_idx in counted_indices:
+                idx += 1
+                continue  # Skip if the word index has already been counted
 
-    # Create a co-occurrence matrix
-    unique_words = sorted(set([word for pair in pair_freq.keys() for word in pair]))
-    word_index = {word: idx for idx, word in enumerate(unique_words)}
-    
-    # Initialize the co-occurrence matrix
-    cooccurrence_matrix = np.zeros((len(unique_words), len(unique_words)), dtype=int)
+            window_start = max(word_idx - window_size, 0)
+            window_end = min(word_idx + window_size + 1, len(words))
+            window_words_indices = [
+                (i, words[i]) for i in range(window_start, window_end) if i not in counted_indices
+            ]
 
-    # Populate the co-occurrence matrix
-    for (word1, word2), count in pair_freq.items():
-        i, j = word_index[word1], word_index[word2]
-        cooccurrence_matrix[i, j] = count
-        cooccurrence_matrix[j, i] = count  # Symmetric matrix
+            for i, (index1, word1) in enumerate(window_words_indices):
+                for j, (index2, word2) in enumerate(window_words_indices[i + 1 :], start=i + 1):
+                    if (
+                        #word1 != word2
+                        word1 in word_to_index
+                        and word2 in word_to_index
+                    ):
+                        # Count the co-occurrence of the pair
+                        matrix[word_to_index[word1], word_to_index[word2]] += 1
+                        matrix[word_to_index[word2], word_to_index[word1]] += 1  # Symmetric
+                        counted_indices.add(index1)
+                        counted_indices.add(index2)
+            # Increment the index to skip the word after counting
+            counted_indices.add(word_idx)
+            idx += 1
 
-    # Create a DataFrame for easier visualization
-    cooccurrence_df = pd.DataFrame(cooccurrence_matrix, index=unique_words, columns=unique_words)
+        cooccurrence_matrices[book] = matrix
+    return cooccurrence_matrices
 
-    return cooccurrence_df
-
-def plot_cooccurrence_heatmap(cooccurrence_df):
-    '''
-    Plot a heatmap of the co-occurrence matrix.
-
+def generate_ngrams(text, n):
+    """
+    Generate a list of n-grams from a given text.
     Args:
-    cooccurrence_df (pandas.DataFrame): DataFrame containing the co-occurrence matrix.
-    '''
-    plt.figure(figsize=(10, 8))
-    plt.title('Co-occurrence Heatmap')
-    plt.imshow(cooccurrence_df, cmap='Blues', interpolation='none')
-    plt.colorbar(label='Co-occurrence Count')
-    plt.xticks(ticks=np.arange(len(cooccurrence_df.columns)), labels=cooccurrence_df.columns, rotation=90)
-    plt.yticks(ticks=np.arange(len(cooccurrence_df.index)), labels=cooccurrence_df.index)
-    plt.tight_layout()
-    plt.show()
+        text (str): Input text.
+        n (int): Size of n-grams to generate.
+    """
+    words = text.split()
+    ngrams = list(itertools.islice(zip(*(words[i:] for i in range(n))), len(words) - n + 1))
+    return ngrams
+
+def analyze_ngrams(book_texts, n):
+    """
+    Analyze n-gram frequencies for a collection of books.
+    Args:
+        book_texts (dict): Dictionary with book titles as keys and full text as values.
+        n (int): Size of n-grams to analyze.
+    Returns:
+        dict: Dictionary with book titles as keys and n-gram frequency counters as values.
+    """
+    ngram_frequencies = {
+        title: Counter(generate_ngrams(text, n))
+        for title, text in book_texts.items()
+    }
+    return ngram_frequencies
