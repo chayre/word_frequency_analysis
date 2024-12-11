@@ -1,6 +1,6 @@
 """Process the raw data so that it is ready for textual analysis"""
 import re
-import nltk # External
+import nltk # External package
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer

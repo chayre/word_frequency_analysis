@@ -1,5 +1,5 @@
-from os import path
 import os
+from os import path
 import numpy as np
 import pandas as pd
 import seaborn as sns # External
@@ -7,7 +7,6 @@ from wordcloud import WordCloud # External
 from PIL import Image
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-from random import seed
 from data_analysis import calculate_mean_word_length
 
 def generate_color_map(common_words):
@@ -16,8 +15,7 @@ def generate_color_map(common_words):
     Args:
         common_words (dict): A dictionary with top N common words listed beside their count, for each text.
     """
-    seed(3)
-    return {word: cm.tab20(i % 20) for i, word in enumerate(sorted(common_words))}
+    return {word: cm.tab20b(i % 20) for i, word in enumerate(sorted(common_words))}
 
 def create_color_func(color_map):
     """
@@ -61,10 +59,16 @@ def create_wordcloud(books_text, color_function, unique_chart=False):
         ax.axis("off") 
         ax.set_title(title, fontsize=16, pad=10, loc='center') 
     # Adjust layout and display
-    plt.suptitle(
+    if (len(books_text) != 1):
+        plt.suptitle(
         "Unique Words" if unique_chart else "Most Common Words",
-        fontsize=16
-    )
+        fontsize=20, y = 0.8  
+        )
+    else:
+        plt.suptitle(
+        "Unique Words" if unique_chart else "Most Common Words",
+        fontsize=20, y = 1 
+        )
     plt.tight_layout()
     plt.show()
     
@@ -97,7 +101,7 @@ def create_barchart(books_common_words, color_map, normalize=False, books_text=N
         bars = ax.bar(range(len(words)), counts, color=colors)   
         ax.set_title(book, fontsize=12)
         ax.set_xticks(range(len(words)))
-        ax.set_xticklabels(words, rotation=45, ha="center", fontsize=7)
+        ax.set_xticklabels(words, rotation=45, ha="center", fontsize=8)
         ax.set_xlabel("Words", fontsize=12)
         ax.set_ylabel("Frequency" if normalize else "Count", fontsize=12)
         ax.grid(axis="y", linestyle="--", alpha=0.7)     
@@ -130,7 +134,7 @@ def create_mean_word_length_chart(text_dict, number_common_words):
     plt.xticks(df['Index'], df['Book'], rotation=30, ha='right', fontsize=10)
     plt.yticks(fontsize=10)
     for x, y in zip(df['Index'], df['Mean Word Length']):
-        plt.text(x + 0.12, y - 0.02, f'{y:.2f}', ha='center', fontsize=10, color='blue')
+        plt.text(x + 0.14, y - 0.019, f'{y:.2f}', ha='center', fontsize=10, color='blue')
     plt.title(f'Mean Word Length of the {number_common_words} Most Common Words in Sherlock Holmes Novels', fontsize=16)
     plt.xlabel('Books', fontsize=12)
     plt.ylabel('Mean Word Length', fontsize=12)
@@ -139,11 +143,12 @@ def create_mean_word_length_chart(text_dict, number_common_words):
     plt.tight_layout()
     plt.show()
 
-def plot_tfidf_heatmap(tfidf_df, top_n=10):
+def plot_tfidf_heatmap(tfidf_df, smooth=False, top_n=26):
     """
     Plot a heatmap of TF-IDF scores for the top N words per book.
     Args:
         tfidf_df (pd.DataFrame): The DataFrame containing TF/IDF/TF-IDF data.
+        smooth (bool): Optionally graph smooth IDF.
         top_n (int): Number of top words per book to include.
     """
     # Filter top N words per book
@@ -155,7 +160,7 @@ def plot_tfidf_heatmap(tfidf_df, top_n=10):
     # Pivot table to create a matrix for heatmap
     heatmap_data = top_words.pivot_table(
         index="Word", columns="Book", values="TF-IDF", fill_value=0
-    )
+    ) * 1e3
     # Plot heatmap
     plt.figure(figsize=(12, 8))
     sns.heatmap(
@@ -166,8 +171,11 @@ def plot_tfidf_heatmap(tfidf_df, top_n=10):
         cbar_kws={"label": "TF-IDF Score"},
         linecolor='black',  
         linewidths=1
-    )
-    plt.title(f"Heatmap of Common Words by TF-IDF Scores Across Books")
+    ) 
+    if smooth:
+        plt.title("Heatmap of Common Words by TF-IDF Scores (Using Smooth IDF calculation) (scaled by 1e3)", fontsize=16)
+    else:
+        plt.title("Heatmap of Common Words by TF-IDF Scores (scaled by 1e3)", fontsize=16)
     plt.ylabel("Words")
     plt.xlabel("Books")
     plt.xticks(rotation=45)
@@ -178,14 +186,10 @@ def plot_tfidf_heatmap(tfidf_df, top_n=10):
 def plot_cooccurrence_heatmap(cooccurrence_matrices, common_word_list, window_size):
     """
     Plot a heatmap of the co-occurrence frequencies for each book.
-
     Args:
         cooccurrence_matrices (dict): Dictionary where keys are book titles and values are co-occurrence matrices.
         common_word_list (dict): Dictionary where keys are book titles and values are lists of common words.
         window_size (int): The size of the window to check for word co-occurrences.
-
-    Returns:
-        None
     """
     for book, matrix in cooccurrence_matrices.items():
         words = common_word_list[book]  # Get the corresponding common words for the current book

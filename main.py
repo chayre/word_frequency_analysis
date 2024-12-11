@@ -3,7 +3,7 @@
 import json
 from data_collection import load_or_download_books
 from data_preprocessing import preprocess_all_books
-from data_analysis import return_most_common, unique_words_from_texts, calculate_tf_idf, calculate_word_pair_frequencies, analyze_ngrams
+from data_analysis import return_most_common, unique_words_from_texts, calculate_tf_idf, calculate_word_pair_frequencies, analyze_ngrams, update_missing_words
 from data_graphing import create_wordcloud, create_barchart, create_mean_word_length_chart, generate_color_map, create_color_func, plot_tfidf_heatmap, plot_cooccurrence_heatmap, plot_ngrams
 
 def main():
@@ -53,38 +53,33 @@ def main():
     color_func = create_color_func(color_map)
 
     # Create 5 wordclouds for each of the novels showing most common words
-    create_wordcloud(books_text, color_func)
+    #create_wordcloud(books_text, color_func)
 
     # Create a wordcloud which shows the most common words for all novels
-    create_wordcloud(all_text, color_func)
+    #create_wordcloud(all_text, color_func)
 
     # Create 5 barcharts to compare counts of most common words
-    create_barchart(books_common_words, color_map)
+    #create_barchart(books_common_words, color_map)
 
     # Create 5 barcharts to compare frequencies of most common words
-    create_barchart(books_common_words, color_map, True, books_text)
-
-    # Create a barchart which shows the most common words for all novels
-    create_barchart(all_text_common_words, color_map)
+    #create_barchart(all_text_common_words, color_map)
 
     # Create a line chart which shows the average length of the top n (in this case, 50) words for each novel
-    create_mean_word_length_chart(books_text, 50)
+    #create_mean_word_length_chart(books_text, 50)
 
     # Create 5 wordclouds for each of the novels, showing unique words in each
-    create_wordcloud({title: ' '.join(words) for title, words in unique_words_from_texts(books_text).items()}, color_func, True)
+    #create_wordcloud({title: ' '.join(words) for title, words in unique_words_from_texts(books_text).items()}, color_func, True)
 
-    # Create a TF-IDF heatmap
-    plot_tfidf_heatmap(calculate_tf_idf(books_common_words))
+    #Plot standard tfidf heatmap
+    #plot_tfidf_heatmap(calculate_tf_idf(update_missing_words(books_common_words, books_text), books_text))
 
-    # Create a co-occurence heatmap for the 50 most common words (windowsize 1, which looks at the words next to each common word - 3 word segments)
-    #time to time
-    #little time
-    #come see, come and see
-    #come come
-    #use itertools combinations
-    plot_cooccurrence_heatmap(calculate_word_pair_frequencies(all_text, common_word_list, 1), common_word_list, 1)
+    #Plot smooth tfidf heatmap
+    #plot_tfidf_heatmap(calculate_tf_idf(update_missing_words(books_common_words, books_text), books_text, smooth=True), smooth=True)
 
-    # Plot the top 10 2-word combinations for each book in the collection
+    # Create a co-occurrence heatmap for the 50 most common words (windowsize 1, which looks at the words next to each common word - 3 word segments)
+    #plot_cooccurrence_heatmap(calculate_word_pair_frequencies(all_text, common_word_list, 1), common_word_list, 1)
+
+    # Plot the top 10 2-word combinations for each book in the collection (itertools)
     plot_ngrams(analyze_ngrams(books_text, 2), 10, 2)
 
     # Plot the top 10 2-word combinations for all Sherlock Holmes Novels
