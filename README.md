@@ -5,7 +5,7 @@ This project analyzes word usage in five Sherlock Holmes novels using text proce
 ## Step-by-Step Breakdown
 To see a full breakdown of the code as well as more analysis, see my accompanying Jupyter Notebook:
 
-[Jupyter Notebook PDF](https://github.com/chayre/word_frequency_analysis/blob/main/jupyter_notebook.pdf)
+[Jupyter Notebook](https://github.com/chayre/word_frequency_analysis/blob/main/jupyter_notebook.ipynb)
 
 
 ![image](https://github.com/user-attachments/assets/1ecdcaec-bd0b-418a-ae0b-49ff4b86adff)
