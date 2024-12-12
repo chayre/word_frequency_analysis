@@ -2,6 +2,12 @@
 
 This project analyzes word usage in five Sherlock Holmes novels using text processing and data visualization techniques. The analysis includes word frequency, unique words, N-grams, TF-IDF scores, and co-occurrence heatmaps.
 
+## Step-by-Step Breakdown
+To see a full breakdown of the code as well as more analysis, see my accompanying Jupyter Notebook:
+
+[Jupyter Notebook PDF](https://github.com/chayre/word_frequency_analysis/blob/main/jupyter_notebook.pdf)
+
+
 ![image](https://github.com/user-attachments/assets/1ecdcaec-bd0b-418a-ae0b-49ff4b86adff)
 
 ## Features
@@ -64,10 +70,3 @@ Some visualizations:
 
 ## Conclusion
 This analysis provided insights into word usage patterns, unique phrases, and thematic elements in Sherlock Holmes novels. It demonstrates the power of computational text analysis in exploring literary works.
-
-## Step-by-Step Breakdown
-To see a full breakdown of the code as well as more analysis, see my accompanying Jupyter Notebook:
-
-[Markdown PDF]([https://github.com/chayre/word_frequency_analysis/blob/main/jupyter_notebook.pdf))
-
-
