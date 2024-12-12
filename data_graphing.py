@@ -1,3 +1,4 @@
+"""Visualize data structures"""
 import os
 from os import path
 import numpy as np
@@ -56,22 +57,22 @@ def create_wordcloud(books_text, color_function, unique_chart=False):
             color_func=color_function  # Apply consistent color function
         ).generate(text)
         ax.imshow(wc, interpolation="bilinear")
-        ax.axis("off") 
-        ax.set_title(title, fontsize=16, pad=10, loc='center') 
+        ax.axis("off")
+        ax.set_title(title, fontsize=16, pad=10, loc='center')
     # Adjust layout and display
     if (len(books_text) != 1):
         plt.suptitle(
         "Unique Words" if unique_chart else "Most Common Words",
-        fontsize=20, y = 0.8  
+        fontsize=20, y = 0.8
         )
     else:
         plt.suptitle(
         "Unique Words" if unique_chart else "Most Common Words",
-        fontsize=20, y = 1 
+        fontsize=20, y = 1
         )
     plt.tight_layout()
     plt.show()
-    
+
 
 def create_barchart(books_common_words, color_map, normalize=False, books_text=None):
     """
@@ -93,18 +94,18 @@ def create_barchart(books_common_words, color_map, normalize=False, books_text=N
     fig, axes = plt.subplots(nrows=1, ncols=len(books_common_words), figsize=(18, 6), sharey=True)
     # If there is only one subplot, axes will not be a list; convert to list
     if len(books_common_words) == 1:
-        axes = [axes] 
+        axes = [axes]
     for ax, (book, words) in zip(axes, books_common_words.items()):
-        words, counts = zip(*words)  
+        words, counts = zip(*words)
         # Assign colors based on the consistent color mapping
         colors = [color_map[word] for word in words]
-        bars = ax.bar(range(len(words)), counts, color=colors)   
+        bars = ax.bar(range(len(words)), counts, color=colors)
         ax.set_title(book, fontsize=12)
         ax.set_xticks(range(len(words)))
         ax.set_xticklabels(words, rotation=45, ha="center", fontsize=8)
         ax.set_xlabel("Words", fontsize=12)
         ax.set_ylabel("Frequency" if normalize else "Count", fontsize=12)
-        ax.grid(axis="y", linestyle="--", alpha=0.7)     
+        ax.grid(axis="y", linestyle="--", alpha=0.7)
         # Annotate bars with count values
         if not normalize:
             for bar, count in zip(ax.patches, counts):
@@ -169,9 +170,9 @@ def plot_tfidf_heatmap(tfidf_df, smooth=False, top_n=26):
         annot=True,
         fmt=".2f",
         cbar_kws={"label": "TF-IDF Score"},
-        linecolor='black',  
+        linecolor='black',
         linewidths=1
-    ) 
+    )
     if smooth:
         plt.title("Heatmap of Common Words by TF-IDF Scores (Using Smooth IDF calculation) (scaled by 1e3)", fontsize=16)
     else:
@@ -195,7 +196,7 @@ def plot_cooccurrence_heatmap(cooccurrence_matrices, common_word_list, window_si
         words = common_word_list[book]  # Get the corresponding common words for the current book
         # Set up the figure
         plt.figure(figsize=(10, 8))
-        
+
         # Create the heatmap
         heatmap = sns.heatmap(
             np.log1p(matrix),
@@ -204,15 +205,15 @@ def plot_cooccurrence_heatmap(cooccurrence_matrices, common_word_list, window_si
             cmap='Blues',
             annot=False,
             cbar_kws={'label': 'Log of Co-occurrence Count'},
-            linecolor='black',  
+            linecolor='black',
             linewidths=0.5
         )
-        
+
         # Add title and axis labels
         plt.title(f"{book} Co-occurrence Heatmap; Log Count of {window_size + 2}-word Segments with Both Key Words")
         plt.xlabel('Words')
         plt.ylabel('Words')
-        
+
         # Show the heatmap for this book
         plt.show()
 

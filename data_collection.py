@@ -1,11 +1,4 @@
-# Assumptions: all text files from Project Guntenberg begin with an introductory statement (Followed by * * *, after which the text of the book begins) and 
-# are concluded with an ending statement (which is preceded by * * *, similarly). I remove these Project Gutenberg statements during cleaning. 
-# However, I do not remove some details which would be found in a book such as table of contents; I assume this to be part of the text.
-# I also assume that Project Gutenberg text files begin with a title, author, and language section. I use this to construct the metadata in my JSON.
-# Only downloading the four Sherlock Holmes novels and the most popular collection of Sherlock Holmes short stories
-# qtbase5-dev downloaded, wayland5
-#export QT_QPA_PLATFORM=xcb
-
+"""Download and store text and metadata"""
 import re
 import json
 import requests
@@ -19,14 +12,14 @@ urls = [
     "https://www.gutenberg.org/cache/epub/1661/pg1661.txt",  # The Adventures of Sherlock Holmes
     ]
 
-# URL request; return plain text if successful 
+# URL request; return plain text if successful
 def download_book(url):
     """
     Download the text from a given URL.
     Args: 
         url (string): Contains a Project Gutenberg URL.
     """
-    response = requests.get(url)
+    response = requests.get(url, timeout=10)
     if response.status_code == 200:  # HTTP status code for OK
         return response.text
     else:
@@ -53,9 +46,9 @@ def load_or_download_books():
     """
     If the book has not already been downloaded, download it, extract metadata, and save to a JSON file. If the book has been downloaded, load the JSON file and open it.
     """
-    try: 
+    try:
         with open("books_raw.json", "r", encoding="utf-8") as f:
-            rawbooks = json.load(f) 
+            rawbooks = json.load(f)
             if not rawbooks:  # Check if the file is empty
                 raise ValueError("The JSON file is empty.")
     except (FileNotFoundError, ValueError):

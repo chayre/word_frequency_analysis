@@ -1,9 +1,10 @@
+"""Create data structures to give data_graphing functions"""
 import itertools
 import re
-import numpy as np
-import pandas as pd
 from collections import Counter
 from itertools import chain
+import numpy as np
+import pandas as pd
 
 def unique_words_from_texts(book_texts):
     '''
@@ -50,7 +51,7 @@ def calculate_mean_word_length(text_dict, number_common_words):
         values are full texts
         number_common_words (int): The number of most common words to calculate average length of 
     '''
-    common_words_dict = {title: return_most_common(text, number_common_words) 
+    common_words_dict = {title: return_most_common(text, number_common_words)
                         for title, text in text_dict.items()}
     mean_lengths = {}
     for book, words in common_words_dict.items():
@@ -99,8 +100,6 @@ def calculate_tf_idf(word_frequencies, books_text, smooth=False):
         books_text (dict): A dictionary of books with their full text.
         smooth (bool): Optionally compute smooth IDF.
     '''
-    # Total number of documents
-    num_texts = len(word_frequencies)
     # Convert frequencies to DataFrame
     data = []
     for book, freqs in word_frequencies.items():
@@ -150,14 +149,11 @@ def calculate_word_pair_frequencies(all_text, common_word_list, window_size):
         # List of common words for the current book
         common_words = common_word_list[book]
         word_indices = [i for i, word in enumerate(text.split()) if word in common_words]
-
         # Initialize the co-occurrence matrix
         matrix = np.zeros((len(common_words), len(common_words)), dtype=int)
         word_to_index = {word: i for i, word in enumerate(common_words)}
-
         # Set to track already counted indices
         counted_indices = set()
-
         # Iterate through words and count co-occurrences
         words = text.split()
         idx = 0  # Pointer to the current word index
@@ -166,13 +162,11 @@ def calculate_word_pair_frequencies(all_text, common_word_list, window_size):
             if word_idx in counted_indices:
                 idx += 1
                 continue  # Skip if the word index has already been counted
-
             window_start = max(word_idx - window_size, 0)
             window_end = min(word_idx + window_size + 1, len(words))
             window_words_indices = [
                 (i, words[i]) for i in range(window_start, window_end) if i not in counted_indices
             ]
-
             for i, (index1, word1) in enumerate(window_words_indices):
                 for j, (index2, word2) in enumerate(window_words_indices[i + 1 :], start=i + 1):
                     if (
@@ -188,7 +182,6 @@ def calculate_word_pair_frequencies(all_text, common_word_list, window_size):
             # Increment the index to skip the word after counting
             counted_indices.add(word_idx)
             idx += 1
-
         cooccurrence_matrices[book] = matrix
     return cooccurrence_matrices
 
