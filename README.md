@@ -52,6 +52,7 @@ The project includes:
 1. **Word Clouds**: Highlighting frequent words and unique words.
 2. **Bar Charts**: Frequency and normalized frequency of top words and frequency of n-grams.
 3. **Heatmaps**: TF-IDF Scores, co-occurrence of common words.
+4. **Line charts**: For visualizing changes in mean word length over time.
 
 Some visualizations:
 
